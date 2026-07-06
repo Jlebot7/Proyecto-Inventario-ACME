@@ -1,0 +1,65 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard — ACME Macondo</title>
+  <link rel="stylesheet" href="css/modules.css">
+</head>
+<body>
+  <div class="app-shell">
+    <acme-navbar active="dashboard.html" title="Panel principal">
+      <div class="page-header">
+        <h2>Bienvenido a ACME Macondo</h2>
+        <p>Gestione usuarios, inventario y procesos productivos desde un solo lugar.</p>
+      </div>
+      <div class="dashboard-cards">
+        <a href="usuarios.html" class="dashboard-card">
+          <div class="icon">👥</div>
+          <h3>Usuarios</h3>
+          <p>Crear, modificar y eliminar usuarios del sistema.</p>
+        </a>
+        <a href="inventario.html" class="dashboard-card">
+          <div class="icon">📦</div>
+          <h3>Inventario</h3>
+          <p>Registrar productos e ingresar materia prima al stock.</p>
+        </a>
+        <a href="inventarios.html" class="dashboard-card">
+          <div class="icon">📋</div>
+          <h3>Lista de inventario</h3>
+          <p>Consultar saldos y buscar productos.</p>
+        </a>
+        <a href="produccion.html" class="dashboard-card">
+          <div class="icon">⚙️</div>
+          <h3>Producción</h3>
+          <p>Fabricar productos terminados según fórmulas.</p>
+        </a>
+      </div>
+      <div class="card" style="margin-top:1.5rem">
+        <h3 class="card-title">Datos de demostración</h3>
+        <p style="color:var(--color-text-muted);margin-bottom:1rem">
+          Cargue materia prima y una receta de ejemplo para probar el flujo productivo.
+        </p>
+        <button type="button" class="btn btn-secondary" id="seed-btn">Cargar datos demo</button>
+      </div>
+    </acme-navbar>
+  </div>
+
+  <script src="js/config/firebase-config.js"></script>
+  <script src="js/services/storage-service.js"></script>
+  <script src="js/services/data-service.js"></script>
+  <script src="js/utils/helpers.js"></script>
+  <script src="js/components/acme-navbar.js"></script>
+  <script src="js/services/seed-data.js"></script>
+  <script>
+    Auth.requireAuth();
+    DataService.init();
+
+    document.getElementById('seed-btn').addEventListener('click', async () => {
+      await SeedData.loadDemo();
+      Toast.success('Datos demo cargados correctamente');
+    });
+  </script>
+</body>
+</html>
+

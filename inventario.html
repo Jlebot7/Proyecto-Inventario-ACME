@@ -1,0 +1,32 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inventario — ACME Macondo</title>
+  <link rel="stylesheet" href="css/modules.css">
+</head>
+<body>
+  <div class="app-shell">
+    <acme-navbar active="inventario.html" title="Módulo de inventario">
+      <div class="page-header">
+        <h2>Inventario</h2>
+        <p>Registre productos (con fórmula si son terminados) e incremente el stock por código.</p>
+      </div>
+      <acme-inventory-module></acme-inventory-module>
+    </acme-navbar>
+  </div>
+
+  <script src="js/config/firebase-config.js"></script>
+  <script src="js/services/storage-service.js"></script>
+  <script src="js/services/data-service.js"></script>
+  <script src="js/utils/helpers.js"></script>
+  <script src="js/components/acme-navbar.js"></script>
+  <script src="js/components/acme-inventory-module.js"></script>
+  <script>
+    Auth.requireAuth();
+    DataService.init();
+  </script>
+</body>
+</html>
+

@@ -1,0 +1,32 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Usuarios — ACME Macondo</title>
+  <link rel="stylesheet" href="css/modules.css">
+</head>
+<body>
+  <div class="app-shell">
+    <acme-navbar active="usuarios.html" title="Módulo de usuarios">
+      <div class="page-header">
+        <h2>Gestión de usuarios</h2>
+        <p>Cree, modifique o elimine usuarios. Use <strong>U</strong> para rellenar el formulario y <strong>D</strong> para eliminar.</p>
+      </div>
+      <acme-user-module></acme-user-module>
+    </acme-navbar>
+  </div>
+
+  <script src="js/config/firebase-config.js"></script>
+  <script src="js/services/storage-service.js"></script>
+  <script src="js/services/data-service.js"></script>
+  <script src="js/utils/helpers.js"></script>
+  <script src="js/components/acme-navbar.js"></script>
+  <script src="js/components/acme-user-module.js"></script>
+  <script>
+    Auth.requireAuth();
+    DataService.init();
+  </script>
+</body>
+</html>
+

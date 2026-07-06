@@ -1,0 +1,22 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registro — ACME Macondo</title>
+  <link rel="stylesheet" href="css/login.css">
+</head>
+<body class="login-page">
+  <acme-user-register></acme-user-register>
+
+  <script src="js/config/firebase-config.js"></script>
+  <script src="js/services/storage-service.js"></script>
+  <script src="js/services/data-service.js"></script>
+  <script src="js/utils/helpers.js"></script>
+  <script src="js/components/acme-user-register.js"></script>
+  <script>
+    Auth.redirectIfAuthenticated();
+  </script>
+</body>
+</html>
+
