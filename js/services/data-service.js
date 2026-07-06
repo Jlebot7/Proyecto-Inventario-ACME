@@ -1,5 +1,13 @@
 ﻿
 const DataService = (() => {
+  function isFirebaseConfigured() {
+    return (
+      typeof FirebaseConfig !== 'undefined' &&
+      typeof FirebaseConfig.databaseURL === 'string' &&
+      !FirebaseConfig.databaseURL.includes('YOUR_PROJECT')
+    );
+  }
+
   const BASE = () => `${FirebaseConfig.databaseURL.replace(/\/$/, '')}`;
 
   async function firebaseGet(path) {
