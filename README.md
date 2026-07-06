@@ -102,11 +102,6 @@ ACMEProject/
 │       ├── acme-inventory-module.js
 │       ├── acme-inventory-list.js
 │       └── acme-production-module.js
-├── wireframes/
-│   ├── login.html
-│   ├── usuarios.html
-│   ├── inventario.html
-│   └── produccion.html
 └── README.md
 ```
 
