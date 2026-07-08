@@ -64,10 +64,11 @@ class AcmeProductionModule extends HTMLElement {
           <label>Código producto terminado</label>
           <input type="text" class="line-code" placeholder="Ej: GAL001">
         </div>
-        <div class="form-group">
+      <div class="form-group">
           <label>Cantidad a fabricar</label>
           <input type="number" class="line-qty" min="1" step="1" value="1">
         </div>
+
       </div>
       <button type="button" class="btn btn-danger btn-sm remove-line">Quitar</button>
     `;
@@ -84,12 +85,18 @@ class AcmeProductionModule extends HTMLElement {
     const lines = this.querySelectorAll('#production-lines .production-item');
     const items = [];
     lines.forEach((line) => {
-      const codigoProducto = line.querySelector('.line-code').value.trim().toUpperCase();
-      const cantidad = Number(line.querySelector('.line-qty').value);
+      const codigoProductoRaw = line.querySelector('.line-code').value;
+      const cantidadRaw = line.querySelector('.line-qty').value;
+
+      const codigoProducto = Helpers.assertNoEmpty(codigoProductoRaw, 'Código producto').toUpperCase();
+      const cantidad = Helpers.normalizePositiveInt(cantidadRaw, `cantidad para ${codigoProducto}`);
+
       if (codigoProducto && cantidad > 0) {
         items.push({ codigoProducto, cantidad });
       }
+
     });
+
     return items;
   }
 
@@ -129,7 +136,13 @@ class AcmeProductionModule extends HTMLElement {
       return;
     }
 
+    if (items.some((i) => !Number.isInteger(i.cantidad) || i.cantidad <= 0)) {
+      Toast.error('La producción requiere cantidades enteras positivas mayores a 0');
+      return;
+    }
+
     const session = StorageService.getSession();
+
 
     try {
       const { record, summary } = await DataService.executeProduction(
@@ -141,10 +154,11 @@ class AcmeProductionModule extends HTMLElement {
       this.querySelector('#production-lines').innerHTML = '';
       this.addProductionLine();
       this.loadHistory();
-    } catch (err) {
-      Toast.error(err.message);
-    }
+      } catch (err) {
+        Toast.error(err.message);
+      }
   }
+
 
   async loadHistory() {
     const productions = await DataService.getProductions();
