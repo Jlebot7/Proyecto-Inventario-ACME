@@ -99,8 +99,9 @@
 .formula-section {
   margin-top: 1rem;
   padding-top: 1rem;
-  border-top: 1px dashed var(--color-border);
+  border-top: 1px solid var(--color-border);
 }
+
 
 .formula-row {
   display: grid;
@@ -115,6 +116,7 @@
     grid-template-columns: 1fr;
   }
 }
+
 
 .production-item {
   border: 1px solid var(--color-border);
@@ -177,10 +179,11 @@
   border-radius: var(--radius-sm);
   background: var(--color-bg-elevated);
   border: 1px solid var(--color-border);
-  box-shadow: var(--shadow);
-  animation: slideIn 0.3s ease;
+  box-shadow: none;
+  animation: none;
   max-width: 360px;
 }
+
 
 .toast.success {
   border-color: var(--color-success);
@@ -190,14 +193,5 @@
   border-color: var(--color-danger);
 }
 
-@keyframes slideIn {
-  from {
-    transform: translateX(100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
+
 
