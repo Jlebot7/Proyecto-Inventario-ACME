@@ -118,14 +118,22 @@ class AcmeUserModule extends HTMLElement {
   async handleSubmit(e) {
     e.preventDefault();
 
-    const identificacion = this.querySelector('#identificacion').value.trim();
-    const nombreCompleto = this.querySelector('#nombreCompleto').value.trim();
-    const cargo = this.querySelector('#cargo').value.trim();
-    const password = this.querySelector('#password').value;
-    const passwordConfirm = this.querySelector('#passwordConfirm').value;
+    const identificacionRaw = this.querySelector('#identificacion').value;
+    const nombreCompletoRaw = this.querySelector('#nombreCompleto').value;
+    const cargoRaw = this.querySelector('#cargo').value;
+    const passwordRaw = this.querySelector('#password').value;
+    const passwordConfirmRaw = this.querySelector('#passwordConfirm').value;
+
+    const identificacion = Helpers.normalizeNumericId(identificacionRaw, 'Identificación');
+    const nombreCompleto = Helpers.normalizeName(nombreCompletoRaw, 'Nombre completo');
+    const cargo = Helpers.assertNoEmpty(cargoRaw, 'Cargo');
+    let password = passwordRaw ?? '';
+    let passwordConfirm = passwordConfirmRaw ?? '';
+
 
     const users = await DataService.getUsers();
     const isEdit = Boolean(this.editingId);
+
 
     if (!isEdit && users[identificacion]) {
       Toast.error('Ya existe un usuario con esa identificación');
@@ -133,15 +141,28 @@ class AcmeUserModule extends HTMLElement {
     }
 
     if (password || !isEdit) {
-      if (password !== passwordConfirm) {
+      const passwordStr = password ?? '';
+      const passwordConfirmStr = passwordConfirm ?? '';
+
+      if (passwordStr.length === 0) {
+        Toast.error('Ingresar una contraseña');
+        return;
+      }
+
+      if (passwordStr !== passwordConfirmStr) {
         Toast.error('Las contraseñas no coinciden');
         return;
       }
-      if (password.length < 6) {
+      if (passwordStr.length < 6) {
         Toast.error('La contraseña debe tener al menos 6 caracteres');
         return;
       }
+
+      password = passwordStr;
+      passwordConfirm = passwordConfirmStr;
+
     }
+
 
     const userData = {
       identificacion,
