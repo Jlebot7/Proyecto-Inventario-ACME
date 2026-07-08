@@ -46,7 +46,6 @@ class AcmeLogin extends HTMLElement {
 
       alertEl.innerHTML = '';
 
-      // Deshabilitar SIEMPRE durante el submit para evitar estados raros
       const originalText = submitBtn?.textContent;
       if (submitBtn) {
         submitBtn.disabled = true;
