@@ -118,68 +118,82 @@ class AcmeUserModule extends HTMLElement {
   async handleSubmit(e) {
     e.preventDefault();
 
-    const identificacionRaw = this.querySelector('#identificacion').value;
-    const nombreCompletoRaw = this.querySelector('#nombreCompleto').value;
-    const cargoRaw = this.querySelector('#cargo').value;
-    const passwordRaw = this.querySelector('#password').value;
-    const passwordConfirmRaw = this.querySelector('#passwordConfirm').value;
+    const formEl = this.querySelector('#user-form');
+    const submitBtn = this.querySelector('#save-btn');
 
-    const identificacion = Helpers.normalizeNumericId(identificacionRaw, 'Identificación');
-    const nombreCompleto = Helpers.normalizeName(nombreCompletoRaw, 'Nombre completo');
-    const cargo = Helpers.assertNoEmpty(cargoRaw, 'Cargo');
-    let password = passwordRaw ?? '';
-    let passwordConfirm = passwordConfirmRaw ?? '';
-
-
-    const users = await DataService.getUsers();
-    const isEdit = Boolean(this.editingId);
-
-
-    if (!isEdit && users[identificacion]) {
-      Toast.error('Ya existe un usuario con esa identificación');
-      return;
+    const originalText = submitBtn?.textContent;
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Guardando...';
     }
 
-    if (password || !isEdit) {
-      const passwordStr = password ?? '';
-      const passwordConfirmStr = passwordConfirm ?? '';
+    try {
+      const identificacionRaw = this.querySelector('#identificacion').value;
+      const nombreCompletoRaw = this.querySelector('#nombreCompleto').value;
+      const cargoRaw = this.querySelector('#cargo').value;
+      const passwordRaw = this.querySelector('#password').value;
+      const passwordConfirmRaw = this.querySelector('#passwordConfirm').value;
 
-      if (passwordStr.length === 0) {
+      const identificacion = Helpers.normalizeNumericId(identificacionRaw, 'Identificación');
+      const nombreCompleto = Helpers.normalizeName(nombreCompletoRaw, 'Nombre completo');
+      const cargo = Helpers.assertNoEmpty(cargoRaw, 'Cargo');
+      let password = passwordRaw ?? '';
+      let passwordConfirm = passwordConfirmRaw ?? '';
+
+      const users = await DataService.getUsers();
+      const isEdit = Boolean(this.editingId);
+
+      if (!isEdit && users[identificacion]) {
+        Toast.error('Ya existe un usuario con esa identificación');
+        return;
+      }
+
+      if (password || !isEdit) {
+        const passwordStr = password ?? '';
+        const passwordConfirmStr = passwordConfirm ?? '';
+
+        if (passwordStr.length === 0) {
+          Toast.error('Ingresar una contraseña');
+          return;
+        }
+
+        if (passwordStr !== passwordConfirmStr) {
+          Toast.error('Las contraseñas no coinciden');
+          return;
+        }
+
+        if (passwordStr.length < 6) {
+          Toast.error('La contraseña debe tener al menos 6 caracteres');
+          return;
+        }
+
+        password = passwordStr;
+        passwordConfirm = passwordConfirmStr;
+      }
+
+      const userData = {
+        identificacion,
+        nombreCompleto,
+        cargo,
+        password: password || users[this.editingId]?.password
+      };
+
+      if (!userData.password) {
         Toast.error('Ingresar una contraseña');
         return;
       }
 
-      if (passwordStr !== passwordConfirmStr) {
-        Toast.error('Las contraseñas no coinciden');
-        return;
+      await DataService.saveUser(identificacion, userData);
+      Toast.success(isEdit ? 'Usuario actualizado' : 'Usuario creado');
+      this.resetForm();
+      this.loadUsers();
+    } finally {
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
       }
-      if (passwordStr.length < 6) {
-        Toast.error('La contraseña debe tener al menos 6 caracteres');
-        return;
-      }
-
-      password = passwordStr;
-      passwordConfirm = passwordConfirmStr;
-
+      formEl?.classList.remove('is-submitting');
     }
-
-
-    const userData = {
-      identificacion,
-      nombreCompleto,
-      cargo,
-      password: password || users[this.editingId]?.password
-    };
-
-    if (!userData.password) {
-      Toast.error('Ingresar una contraseña');
-      return;
-    }
-
-    await DataService.saveUser(identificacion, userData);
-    Toast.success(isEdit ? 'Usuario actualizado' : 'Usuario creado');
-    this.resetForm();
-    this.loadUsers();
   }
 
   async deleteUser(id) {
