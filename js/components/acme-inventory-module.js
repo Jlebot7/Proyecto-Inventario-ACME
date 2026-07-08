@@ -95,9 +95,12 @@ class AcmeInventoryModule extends HTMLElement {
       </div>
       <div class="form-group" style="margin:0">
         <label>Cantidad</label>
-        <input type="number" class="formula-qty" min="0.01" step="any" value="${data.cantidad ?? ''}">
+        <input type="number" class="formula-qty" min="1" step="1" value="${data.cantidad ?? ''}">
       </div>
+
+
       <button type="button" class="btn btn-danger btn-sm btn-icon remove-formula" title="Quitar">✕</button>
+
     `;
     row.querySelector('.remove-formula').addEventListener('click', () => {
       row.remove();
@@ -110,11 +113,22 @@ class AcmeInventoryModule extends HTMLElement {
     const rows = this.querySelectorAll('#formula-rows .formula-row');
     const formula = [];
     rows.forEach((row) => {
-      const codigoMateriaPrima = row.querySelector('.formula-code').value.trim();
-      const cantidad = Number(row.querySelector('.formula-qty').value);
-      if (codigoMateriaPrima && cantidad > 0) {
-        formula.push({ codigoMateriaPrima, cantidad });
-      }
+      const codigoMateriaPrima = row.querySelector('.formula-code').value;
+      const cantidadRaw = row.querySelector('.formula-qty').value;
+
+      if (codigoMateriaPrima === null || codigoMateriaPrima === undefined) return;
+      const codigoMateriaPrimaTrimmed = String(codigoMateriaPrima).trim().toUpperCase();
+
+      if (codigoMateriaPrimaTrimmed.length === 0) return;
+
+      const cantidad = Helpers.normalizePositiveInt(cantidadRaw, 'cantidad fórmula');
+
+      if (!Number.isInteger(cantidad) || cantidad <= 0) return;
+      formula.push({ codigoMateriaPrima: codigoMateriaPrimaTrimmed, cantidad });
+
+
+
+
     });
     return formula;
   }
@@ -122,9 +136,14 @@ class AcmeInventoryModule extends HTMLElement {
   async handleProductSubmit(e) {
     e.preventDefault();
 
-    const codigo = this.querySelector('#codigo').value.trim().toUpperCase();
-    const nombre = this.querySelector('#nombre').value.trim();
-    const proveedor = this.querySelector('#proveedor').value.trim();
+    const codigoRaw = this.querySelector('#codigo').value;
+    const nombreRaw = this.querySelector('#nombre').value;
+    const proveedorRaw = this.querySelector('#proveedor').value;
+
+    const codigo = Helpers.assertNoEmpty(codigoRaw, 'Código').toUpperCase();
+    const nombre = Helpers.normalizeName(nombreRaw, 'Nombre');
+    const proveedor = Helpers.normalizeName(proveedorRaw, 'Proveedor');
+
     const tipo = this.querySelector('#tipo').value;
     const formula = tipo === 'terminado' ? this.getFormulaFromForm() : [];
 
@@ -132,6 +151,13 @@ class AcmeInventoryModule extends HTMLElement {
       Toast.error('Los productos terminados requieren al menos un ingrediente en la fórmula');
       return;
     }
+
+    if (formula.some((f) => !Number.isInteger(f.cantidad) || f.cantidad <= 0)) {
+
+      Toast.error('La fórmula requiere cantidades enteras positivas mayores a 0');
+      return;
+    }
+
 
     const products = await DataService.getProducts();
     if (!this.editingCode && products[codigo]) {
@@ -163,8 +189,12 @@ class AcmeInventoryModule extends HTMLElement {
 
   async handleStockSubmit(e) {
     e.preventDefault();
-    const codigo = this.querySelector('#stock-codigo').value.trim().toUpperCase();
-    const cantidad = this.querySelector('#stock-cantidad').value;
+    const codigoRaw = this.querySelector('#stock-codigo').value;
+    const cantidadRaw = this.querySelector('#stock-cantidad').value;
+
+    const codigo = Helpers.assertNoEmpty(codigoRaw, 'Código').toUpperCase();
+    const cantidad = Helpers.normalizePositiveInt(cantidadRaw, 'cantidad');
+
 
     try {
       const product = await DataService.addStock(codigo, cantidad);
