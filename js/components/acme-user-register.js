@@ -34,7 +34,7 @@
             <label for="passwordConfirm">Confirmar contraseña</label>
             <input type="password" id="passwordConfirm" required minlength="6">
           </div>
-          <button type="submit" class="btn btn-primary" style="width:100%">Registrar</button>
+          <button type="submit" class="btn btn-primary" style="width:100%" id="register-submit">Registrar</button>
         </form>
         <div class="login-footer">
           <a href="login.html">← Volver al login</a>
@@ -45,40 +45,46 @@
     this.querySelector('#register-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       const alertEl = this.querySelector('#register-alert');
+      const submitBtn = this.querySelector('#register-submit');
+      const formEl = this.querySelector('#register-form');
+
       alertEl.innerHTML = '';
 
-      const identificacionRaw = this.querySelector('#identificacion').value;
-      const nombreCompletoRaw = this.querySelector('#nombreCompleto').value;
-      const cargoRaw = this.querySelector('#cargo').value;
-      const passwordRaw = this.querySelector('#password').value;
-      const passwordConfirmRaw = this.querySelector('#passwordConfirm').value;
-
-      const identificacion = Helpers.normalizeNumericId(identificacionRaw, 'Identificación');
-      const nombreCompleto = Helpers.normalizeName(nombreCompletoRaw, 'Nombre completo');
-      const cargo = Helpers.assertNoEmpty(cargoRaw, 'Cargo');
-      const password = Helpers.assertNoEmpty(passwordRaw, 'Contraseña');
-      const passwordConfirm = Helpers.assertNoEmpty(passwordConfirmRaw, 'Confirmación de contraseña');
-
-      if (password !== passwordConfirm) {
-        alertEl.innerHTML = '<div class="alert alert-error">Las contraseñas no coinciden.</div>';
-        return;
+      // Deshabilitar SIEMPRE durante el submit para evitar estados raros
+      const originalText = submitBtn?.textContent;
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Registrando...';
       }
-
-
-      if (password.length < 6) {
-        alertEl.innerHTML = '<div class="alert alert-error">La contraseña debe tener al menos 6 caracteres.</div>';
-        return;
-      }
-
-      Helpers.assertNoEmpty(cargo, 'Cargo');
-
-
-
-
 
       try {
+        const identificacionRaw = this.querySelector('#identificacion').value;
+        const nombreCompletoRaw = this.querySelector('#nombreCompleto').value;
+        const cargoRaw = this.querySelector('#cargo').value;
+        const passwordRaw = this.querySelector('#password').value;
+        const passwordConfirmRaw = this.querySelector('#passwordConfirm').value;
+
+        const identificacion = Helpers.normalizeNumericId(identificacionRaw, 'Identificación');
+        const nombreCompleto = Helpers.normalizeName(nombreCompletoRaw, 'Nombre completo');
+        const cargo = Helpers.assertNoEmpty(cargoRaw, 'Cargo');
+        const password = Helpers.assertNoEmpty(passwordRaw, 'Contraseña');
+        const passwordConfirm = Helpers.assertNoEmpty(passwordConfirmRaw, 'Confirmación de contraseña');
+
+        if (password !== passwordConfirm) {
+          alertEl.innerHTML = '<div class="alert alert-error">Las contraseñas no coinciden.</div>';
+          return;
+        }
+
+        if (password.length < 6) {
+          alertEl.innerHTML = '<div class="alert alert-error">La contraseña debe tener al menos 6 caracteres.</div>';
+          return;
+        }
+
+        Helpers.assertNoEmpty(cargo, 'Cargo');
+
         await DataService.init();
         const users = await DataService.getUsers();
+
         if (users[identificacion]) {
           alertEl.innerHTML = '<div class="alert alert-error">Ya existe un usuario con esa identificación.</div>';
           return;
@@ -91,11 +97,17 @@
           password
         });
 
-
         alertEl.innerHTML = '<div class="alert alert-success">Usuario registrado. Redirigiendo al login...</div>';
         setTimeout(() => { window.location.href = 'login.html'; }, 1500);
       } catch (err) {
         alertEl.innerHTML = `<div class="alert alert-error">${Helpers.escapeHtml(err.message)}</div>`;
+      } finally {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = originalText;
+        }
+        // En caso de que haya quedado el foco/estado del formulario raro
+        formEl?.classList.remove('is-submitting');
       }
     });
 
