@@ -1,7 +1,6 @@
 ﻿@import url('base.css');
 @import url('modules.css');
 
-/* Layout para navbar superior */
 .main-content {
   flex: 1;
 }
@@ -23,7 +22,6 @@
   }
 }
 
-/* Top navbar (sin sidebar) */
 .top-nav {
   position: sticky;
   top: 0;
@@ -90,7 +88,6 @@
   font-size: 0.8rem;
 }
 
-/* Si hay estilos antiguos de sidebar en la app, se ignoran */
 .sidebar,
 .sidebar-overlay,
 .main-content {
