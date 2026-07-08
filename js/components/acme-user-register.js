@@ -47,21 +47,34 @@
       const alertEl = this.querySelector('#register-alert');
       alertEl.innerHTML = '';
 
-      const identificacion = this.querySelector('#identificacion').value.trim();
-      const nombreCompleto = this.querySelector('#nombreCompleto').value.trim();
-      const cargo = this.querySelector('#cargo').value.trim();
-      const password = this.querySelector('#password').value;
-      const passwordConfirm = this.querySelector('#passwordConfirm').value;
+      const identificacionRaw = this.querySelector('#identificacion').value;
+      const nombreCompletoRaw = this.querySelector('#nombreCompleto').value;
+      const cargoRaw = this.querySelector('#cargo').value;
+      const passwordRaw = this.querySelector('#password').value;
+      const passwordConfirmRaw = this.querySelector('#passwordConfirm').value;
+
+      const identificacion = Helpers.normalizeNumericId(identificacionRaw, 'Identificación');
+      const nombreCompleto = Helpers.normalizeName(nombreCompletoRaw, 'Nombre completo');
+      const cargo = Helpers.assertNoEmpty(cargoRaw, 'Cargo');
+      const password = Helpers.assertNoEmpty(passwordRaw, 'Contraseña');
+      const passwordConfirm = Helpers.assertNoEmpty(passwordConfirmRaw, 'Confirmación de contraseña');
 
       if (password !== passwordConfirm) {
         alertEl.innerHTML = '<div class="alert alert-error">Las contraseñas no coinciden.</div>';
         return;
       }
 
+
       if (password.length < 6) {
         alertEl.innerHTML = '<div class="alert alert-error">La contraseña debe tener al menos 6 caracteres.</div>';
         return;
       }
+
+      Helpers.assertNoEmpty(cargo, 'Cargo');
+
+
+
+
 
       try {
         await DataService.init();
@@ -77,6 +90,7 @@
           cargo,
           password
         });
+
 
         alertEl.innerHTML = '<div class="alert alert-success">Usuario registrado. Redirigiendo al login...</div>';
         setTimeout(() => { window.location.href = 'login.html'; }, 1500);
