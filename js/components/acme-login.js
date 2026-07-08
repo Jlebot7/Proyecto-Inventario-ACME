@@ -20,7 +20,7 @@ class AcmeLogin extends HTMLElement {
               <span class="toggle-password" id="toggle-password" title="Mostrar/ocultar">👁️</span>
             </div>
           </div>
-          <button type="submit" class="btn btn-primary">Ingresar</button>
+          <button type="submit" class="btn btn-primary" id="login-submit">Ingresar</button>
         </form>
         <div class="login-footer">
           <p>¿No tiene cuenta? <a href="registro.html">Registrar usuario</a></p>
@@ -42,12 +42,21 @@ class AcmeLogin extends HTMLElement {
     this.querySelector('#login-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       const alertEl = this.querySelector('#login-alert');
+      const submitBtn = this.querySelector('#login-submit');
+
       alertEl.innerHTML = '';
 
-      const identificacionRaw = this.querySelector('#identificacion').value;
-      const passwordRaw = this.querySelector('#password').value;
+      // Deshabilitar SIEMPRE durante el submit para evitar estados raros
+      const originalText = submitBtn?.textContent;
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Ingresando...';
+      }
 
       try {
+        const identificacionRaw = this.querySelector('#identificacion').value;
+        const passwordRaw = this.querySelector('#password').value;
+
         const identificacion = Helpers.normalizeNumericId(identificacionRaw, 'Identificación');
         const password = Helpers.assertNoEmpty(passwordRaw, 'Contraseña');
 
@@ -57,11 +66,17 @@ class AcmeLogin extends HTMLElement {
         if (session) {
           Toast.success('Bienvenido, ' + session.nombreCompleto);
           window.location.href = 'dashboard.html';
-        } else {
-          alertEl.innerHTML = '<div class="alert alert-error">ID o contraseña incorrectos.</div>';
+          return;
         }
+
+        alertEl.innerHTML = '<div class="alert alert-error">ID o contraseña incorrectos.</div>';
       } catch (err) {
         alertEl.innerHTML = `<div class="alert alert-error">${Helpers.escapeHtml(err.message)}</div>`;
+      } finally {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = originalText;
+        }
       }
     });
 
