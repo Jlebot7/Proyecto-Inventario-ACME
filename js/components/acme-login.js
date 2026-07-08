@@ -44,12 +44,16 @@ class AcmeLogin extends HTMLElement {
       const alertEl = this.querySelector('#login-alert');
       alertEl.innerHTML = '';
 
-      const identificacion = this.querySelector('#identificacion').value.trim();
-      const password = this.querySelector('#password').value;
+      const identificacionRaw = this.querySelector('#identificacion').value;
+      const passwordRaw = this.querySelector('#password').value;
 
       try {
+        const identificacion = Helpers.normalizeNumericId(identificacionRaw, 'Identificación');
+        const password = Helpers.assertNoEmpty(passwordRaw, 'Contraseña');
+
         await DataService.init();
         const session = await DataService.authenticate(identificacion, password);
+
         if (session) {
           Toast.success('Bienvenido, ' + session.nombreCompleto);
           window.location.href = 'dashboard.html';
