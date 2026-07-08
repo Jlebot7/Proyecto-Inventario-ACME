@@ -19,7 +19,7 @@ class AcmeProductionModule extends HTMLElement {
             <div id="production-lines"></div>
             <button type="button" class="btn btn-secondary btn-sm" id="add-line">+ Agregar producto</button>
             <div class="form-actions">
-              <button type="submit" class="btn btn-primary">Ejecutar producción</button>
+              <button type="submit" class="btn btn-primary" id="run-production">Ejecutar producción</button>
             </div>
           </form>
         </section>
@@ -64,11 +64,10 @@ class AcmeProductionModule extends HTMLElement {
           <label>Código producto terminado</label>
           <input type="text" class="line-code" placeholder="Ej: GAL001">
         </div>
-      <div class="form-group">
+        <div class="form-group">
           <label>Cantidad a fabricar</label>
           <input type="number" class="line-qty" min="1" step="1" value="1">
         </div>
-
       </div>
       <button type="button" class="btn btn-danger btn-sm remove-line">Quitar</button>
     `;
@@ -84,6 +83,7 @@ class AcmeProductionModule extends HTMLElement {
   getItemsFromForm() {
     const lines = this.querySelectorAll('#production-lines .production-item');
     const items = [];
+
     lines.forEach((line) => {
       const codigoProductoRaw = line.querySelector('.line-code').value;
       const cantidadRaw = line.querySelector('.line-qty').value;
@@ -94,7 +94,6 @@ class AcmeProductionModule extends HTMLElement {
       if (codigoProducto && cantidad > 0) {
         items.push({ codigoProducto, cantidad });
       }
-
     });
 
     return items;
@@ -129,6 +128,11 @@ class AcmeProductionModule extends HTMLElement {
 
   async handleSubmit(e) {
     e.preventDefault();
+
+    const formEl = this.querySelector('#production-form');
+    const submitBtn = this.querySelector('#run-production');
+    const originalText = submitBtn?.textContent;
+
     const items = this.getItemsFromForm();
 
     if (items.length === 0) {
@@ -141,30 +145,34 @@ class AcmeProductionModule extends HTMLElement {
       return;
     }
 
-    const session = StorageService.getSession();
-
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Ejecutando...';
+    }
 
     try {
-      const { record, summary } = await DataService.executeProduction(
-        items,
-        session?.identificacion
-      );
+      const session = StorageService.getSession();
+
+      const { record, summary } = await DataService.executeProduction(items, session?.identificacion);
       Toast.success(`Producción #${record.codigo} completada`);
       this.showSummary(record, summary);
       this.querySelector('#production-lines').innerHTML = '';
       this.addProductionLine();
       this.loadHistory();
-      } catch (err) {
-        Toast.error(err.message);
+    } catch (err) {
+      Toast.error(err.message);
+    } finally {
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
       }
+      formEl?.classList.remove('is-submitting');
+    }
   }
-
 
   async loadHistory() {
     const productions = await DataService.getProductions();
-    const entries = Object.values(productions).sort(
-      (a, b) => Number(b.codigo) - Number(a.codigo)
-    );
+    const entries = Object.values(productions).sort((a, b) => Number(b.codigo) - Number(a.codigo));
 
     const tbody = this.querySelector('#history-tbody');
 
@@ -178,6 +186,7 @@ class AcmeProductionModule extends HTMLElement {
         const productosText = (p.productos || [])
           .map((pr) => `${pr.nombreProducto} (×${pr.cantidadFabricada})`)
           .join(', ');
+
         return `
         <tr>
           <td><strong>#${p.codigo}</strong></td>
