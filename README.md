@@ -24,13 +24,6 @@ npx serve .
 
 Luego abra: `http://localhost:8080/login.html`
 
-### Credenciales demo
-
-| Campo | Valor |
-|-------|-------|
-| Identificación | `1000000001` |
-| Contraseña | `admin123` |
-
 Desde el **Dashboard**, use **Cargar datos demo** para crear materia prima y la receta de galletas.
 
 ## Configuración de Firebase
@@ -104,15 +97,6 @@ ACMEProject/
 │       └── acme-production-module.js
 └── README.md
 ```
-
-## Wireframes
-
-Bocetos de interfaz en la carpeta `wireframes/` (abrir en el navegador):
-
-- [Login](wireframes/login.html)
-- [Usuarios](wireframes/usuarios.html)
-- [Inventario](wireframes/inventario.html)
-- [Producción](wireframes/produccion.html)
 
 ### Flujo UX — Módulo usuarios
 
