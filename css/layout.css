@@ -158,7 +158,8 @@
   gap: 1.5rem;
 }
 
-@media (min-width: 900px) {
+@media (min-width: 1024px) {
+
   .sidebar {
     transform: translateX(0);
   }
