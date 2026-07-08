@@ -1,5 +1,6 @@
 ﻿
 const DataService = (() => {
+
   function isFirebaseConfigured() {
     return (
       typeof FirebaseConfig !== 'undefined' &&
@@ -46,28 +47,52 @@ const DataService = (() => {
     return true;
   }
 
+  async function sleep(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+
+  async function withRetry(fn, attempts = 3, baseDelayMs = 300) {
+    let lastErr;
+
+    for (let i = 1; i <= attempts; i++) {
+      try {
+        return await fn(i);
+      } catch (err) {
+        lastErr = err;
+        const delay = baseDelayMs * Math.pow(2, i - 1);
+        if (i < attempts) {
+          await sleep(delay);
+        }
+      }
+    }
+    throw lastErr;
+  }
+
   async function syncFromFirebase() {
     if (!isFirebaseConfigured()) return;
 
     try {
-      const [users, products, productions, meta] = await Promise.all([
-        firebaseGet('/users'),
-        firebaseGet('/products'),
-        firebaseGet('/productions'),
-        firebaseGet('/meta')
-      ]);
+      const [users, products, productions, meta] = await withRetry(async () => {
+        return Promise.all([
+          firebaseGet('/users'),
+          firebaseGet('/products'),
+          firebaseGet('/productions'),
+          firebaseGet('/meta')
+        ]);
+      }, 3, 300);
 
       if (users) StorageService.setUsers(users);
       if (products) StorageService.setProducts(products);
       if (productions) StorageService.setProductions(productions);
       if (meta) StorageService.setMeta(meta);
     } catch (err) {
-      console.warn('Firebase no disponible, usando localStorage:', err.message);
+      console.warn('Firebase no disponible (retry agotado), usando localStorage:', err.message);
     }
   }
 
   async function pushToFirebase(collection, data) {
     if (!isFirebaseConfigured()) return;
+
     try {
       await firebasePut(`/${collection}`, data);
     } catch (err) {
@@ -80,8 +105,8 @@ const DataService = (() => {
     await syncFromFirebase();
   }
 
-  
   async function getUsers() {
+
     await syncFromFirebase();
     return StorageService.getUsers();
   }
@@ -122,6 +147,7 @@ const DataService = (() => {
 
   
   async function getProducts() {
+
     await syncFromFirebase();
     return StorageService.getProducts();
   }
@@ -155,8 +181,8 @@ const DataService = (() => {
     const products = StorageService.getProducts();
     const product = products[codigo];
     if (!product) throw new Error('Producto no encontrado');
-    const qty = Number(cantidad);
-    if (!Number.isFinite(qty) || qty <= 0) throw new Error('Cantidad inválida');
+
+    const qty = Helpers.normalizePositiveInt(cantidad, 'cantidad');
 
     product.stock = (Number(product.stock) || 0) + qty;
     StorageService.setProducts(products);
@@ -169,16 +195,20 @@ const DataService = (() => {
   async function updateProductStock(codigo, newStock) {
     const products = StorageService.getProducts();
     if (!products[codigo]) throw new Error('Producto no encontrado');
-    products[codigo].stock = newStock;
+
+    const qty = Helpers.normalizePositiveInt(newStock, 'stock');
+    products[codigo].stock = qty;
     StorageService.setProducts(products);
     if (isFirebaseConfigured()) {
-      await firebasePatch(`/products/${codigo}`, { stock: newStock });
+      await firebasePatch(`/products/${codigo}`, { stock: qty });
     }
     return products[codigo];
   }
 
+
   
   async function getProductions() {
+
     await syncFromFirebase();
     return StorageService.getProductions();
   }
@@ -212,12 +242,10 @@ const DataService = (() => {
 
     for (const item of items) {
       const { codigoProducto, cantidad } = item;
-      const qty = Number(cantidad);
-      if (!Number.isFinite(qty) || qty <= 0) {
-        throw new Error(`Cantidad inválida para ${codigoProducto}`);
-      }
+      const qty = Helpers.normalizePositiveInt(cantidad, `cantidad para ${codigoProducto}`);
 
       const finished = products[codigoProducto];
+
       if (!finished) throw new Error(`Producto ${codigoProducto} no existe`);
       if (finished.tipo !== 'terminado') {
         throw new Error(`${codigoProducto} no es un producto terminado`);
@@ -232,7 +260,11 @@ const DataService = (() => {
         if (!raw) {
           throw new Error(`Materia prima ${ingredient.codigoMateriaPrima} no existe`);
         }
-        const needed = Number(ingredient.cantidad) * qty;
+        const ingredientQty = Helpers.normalizePositiveInt(
+          ingredient.cantidad,
+          `cantidad ingrediente ${ingredient.codigoMateriaPrima}`
+        );
+        const needed = ingredientQty * qty;
         const available = Number(raw.stock) || 0;
         if (available < needed) {
           throw new Error(
@@ -248,9 +280,14 @@ const DataService = (() => {
 
       for (const ingredient of finished.formula) {
         const raw = products[ingredient.codigoMateriaPrima];
-        const needed = Number(ingredient.cantidad) * qty;
+        const ingredientQty = Helpers.normalizePositiveInt(
+          ingredient.cantidad,
+          `cantidad ingrediente ${ingredient.codigoMateriaPrima}`
+        );
+        const needed = ingredientQty * qty;
         raw.stock = (Number(raw.stock) || 0) - needed;
       }
+
 
       finished.stock = (Number(finished.stock) || 0) + qty;
 
