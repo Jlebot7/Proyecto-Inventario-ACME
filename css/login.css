@@ -5,9 +5,8 @@
   display: grid;
   place-items: center;
   padding: 1.5rem;
-  background:
-    radial-gradient(ellipse at top, rgba(59, 130, 246, 0.15), transparent 60%),
-    var(--color-bg);
+  background: var(--color-bg);
+
 }
 
 .login-card {
