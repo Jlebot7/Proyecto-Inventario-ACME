@@ -5,8 +5,10 @@ class AcmeProductionReport extends HTMLElement {
 
   connectedCallback() {
     this.render();
+    this.applyDateConstraints();
     this.querySelector('#report-form')?.addEventListener('submit', (e) => this.generarReporte(e));
   }
+
 
   render() {
     this.innerHTML = `
@@ -68,6 +70,35 @@ class AcmeProductionReport extends HTMLElement {
     return dt.toISOString();
   }
 
+  getTodayISODate() {
+    const now = new Date();
+    const y = now.getFullYear();
+    const m = String(now.getMonth() + 1).padStart(2, '0');
+    const d = String(now.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  }
+
+  applyDateConstraints() {
+    const today = this.getTodayISODate();
+    const inputInicio = this.querySelector('#fecha-inicio');
+    const inputFin = this.querySelector('#fecha-fin');
+
+    if (inputInicio) {
+      inputInicio.max = today;
+    }
+    if (inputFin) {
+      inputFin.max = today;
+    }
+
+    const validate = (input) => {
+      if (!input?.value) return;
+      if (input.value > today) input.value = today;
+    };
+    validate(inputInicio);
+    validate(inputFin);
+  }
+
+
   isWithinRange(isoDate, fechaInicio, fechaFin) {
     if (!isoDate) return false;
     const t = new Date(isoDate).getTime();
@@ -82,8 +113,15 @@ class AcmeProductionReport extends HTMLElement {
   async generarReporte(e) {
     e.preventDefault();
 
-    const fechaInicio = this.querySelector('#fecha-inicio').value;
-    const fechaFin = this.querySelector('#fecha-fin').value;
+    const inputInicio = this.querySelector('#fecha-inicio');
+    const inputFin = this.querySelector('#fecha-fin');
+    const today = this.getTodayISODate();
+    if (inputInicio?.value && inputInicio.value > today) inputInicio.value = today;
+    if (inputFin?.value && inputFin.value > today) inputFin.value = today;
+
+    const fechaInicio = inputInicio.value;
+    const fechaFin = inputFin.value;
+
 
     if (!fechaInicio || !fechaFin) {
       Toast.error('Seleccione un rango de fechas válido');
