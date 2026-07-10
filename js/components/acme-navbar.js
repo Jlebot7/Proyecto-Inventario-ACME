@@ -9,7 +9,8 @@ class AcmeNavbar extends HTMLElement {
       { href: 'usuarios.html', label: 'Usuarios' },
       { href: 'inventario.html', label: 'Inventario' },
       { href: 'inventarios.html', label: 'Lista inventario' },
-      { href: 'produccion.html', label: 'Producción' }
+      { href: 'produccion.html', label: 'Producción' },
+      { href: 'reportes.html', label: 'Reportes' }
     ];
 
     this.innerHTML = `
