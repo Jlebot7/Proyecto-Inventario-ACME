@@ -224,10 +224,10 @@ const DataService = (() => {
     return next;
   }
 
-  async function registerProduction(productionData) {
+  async function registerProduction(productionData, selectedDate) {
     const code = await getNextProductionCode();
     const productions = StorageService.getProductions();
-    const record = { ...productionData, codigo: code, fecha: new Date().toISOString() };
+    const record = { ...productionData, codigo: code, fecha: selectedDate };
     productions[code] = record;
     StorageService.setProductions(productions);
     if (isFirebaseConfigured()) {
@@ -236,7 +236,7 @@ const DataService = (() => {
     return record;
   }
 
-  async function executeProduction(items, userIdentificacion) {
+  async function executeProduction(items, selectedDate, userIdentificacion) {
     const products = StorageService.getProducts();
     const summary = [];
 
@@ -308,9 +308,9 @@ const DataService = (() => {
     const record = await registerProduction({
       usuario: userIdentificacion || session?.identificacion,
       productos: summary
-    });
+    }, selectedDate);
 
-    return { record, summary };
+    return { record, summary};
   }
 
   return {

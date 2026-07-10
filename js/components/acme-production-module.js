@@ -134,6 +134,7 @@ class AcmeProductionModule extends HTMLElement {
     const originalText = submitBtn?.textContent;
 
     const items = this.getItemsFromForm();
+    const selectedDate = this.querySelector('#process-date').value;
 
     if (items.length === 0) {
       Toast.error('Agregue al menos un producto a fabricar');
@@ -153,7 +154,7 @@ class AcmeProductionModule extends HTMLElement {
     try {
       const session = StorageService.getSession();
 
-      const { record, summary } = await DataService.executeProduction(items, session?.identificacion);
+      const { record, summary } = await DataService.executeProduction(items, selectedDate, session?.identificacion);
       Toast.success(`Producción #${record.codigo} completada`);
       this.showSummary(record, summary);
       this.querySelector('#production-lines').innerHTML = '';
