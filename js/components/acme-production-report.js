@@ -6,7 +6,6 @@ class AcmeProductionReport extends HTMLElement {
   connectedCallback() {
     this.render();
     this.querySelector('#report-form')?.addEventListener('submit', (e) => this.generarReporte(e));
-    this.loadHistory();
   }
 
   render() {
@@ -57,7 +56,7 @@ class AcmeProductionReport extends HTMLElement {
 
     this.querySelector('#btn-limpiar')?.addEventListener('click', () => {
       this.querySelector('#report-form')?.reset();
-      this.loadHistory();
+      this.renderRows([]);
     });
   }
 
@@ -111,8 +110,9 @@ class AcmeProductionReport extends HTMLElement {
     if (!entries || entries.length === 0) {
       tbody.innerHTML = `
         <tr>
-          <td colspan="4" class="empty-state">Sin procesos registrados</td>
+          <td colspan="4" class="empty-state">Seleccione un rango y presione “Generar reporte”</td>
         </tr>
+
       `;
       return;
     }
