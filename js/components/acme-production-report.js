@@ -190,7 +190,7 @@ class AcmeProductionReport extends HTMLElement {
           <tr>
             <td>
               <strong>#${Helpers.escapeHtml(String(p.codigo))}</strong>
-              <div class="subtle">${Helpers.escapeHtml(p.usuarioNombre || p.usuario || '—')}</div>
+              <div class="subtle">${Helpers.escapeHtml((p.productos && p.productos[0] && p.productos[0].nombreProducto) ? p.productos[0].nombreProducto : '—')}</div>
             </td>
             <td>${Helpers.escapeHtml(p.fecha ? Helpers.formatDate(p.fecha) : '—')}</td>
             <td>${Helpers.escapeHtml(p.usuario || '—')}</td>
