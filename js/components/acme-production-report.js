@@ -90,12 +90,32 @@ class AcmeProductionReport extends HTMLElement {
       inputFin.max = today;
     }
 
-    const validate = (input) => {
+    const validateAgainstToday = (input) => {
       if (!input?.value) return;
       if (input.value > today) input.value = today;
     };
-    validate(inputInicio);
-    validate(inputFin);
+    validateAgainstToday(inputInicio);
+    validateAgainstToday(inputFin);
+
+    const syncMinMaxBetweenInputs = () => {
+      const inicioVal = inputInicio?.value;
+      const finVal = inputFin?.value;
+
+      if (inputFin) {
+        inputFin.min = inicioVal || '';
+      }
+
+      if (inputInicio) {
+        inputInicio.max = finVal || today;
+      }
+    };
+
+    syncMinMaxBetweenInputs();
+
+    inputInicio?.addEventListener('change', syncMinMaxBetweenInputs);
+    inputInicio?.addEventListener('input', syncMinMaxBetweenInputs);
+    inputFin?.addEventListener('change', syncMinMaxBetweenInputs);
+    inputFin?.addEventListener('input', syncMinMaxBetweenInputs);
   }
 
 
@@ -121,6 +141,11 @@ class AcmeProductionReport extends HTMLElement {
 
     const fechaInicio = inputInicio.value;
     const fechaFin = inputFin.value;
+
+    if (fechaInicio > fechaFin) {
+      Toast.error('La fecha inicio no puede ser más reciente que la fecha fin');
+      return;
+    }
 
 
     if (!fechaInicio || !fechaFin) {
